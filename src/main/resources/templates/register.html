@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro</title>
+</head>
+<body>
+<h2>Registro</h2>
+<form id="registerForm" th:action="@{/api/users/registro}" method="post">
+    <label for="email">Email:</label><br>
+    <input type="text" id="email" name="email" th:value="${usuario.email}"><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password"><br><br>
+    <input type="submit" value="Registrar">
+</form>
+
+<script th:inline="javascript">
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const userData = {};
+        formData.forEach((value, key) => {
+            userData[key] = value;
+        });
+        fetch(event.target.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+            })
+            .then(data => {
+                if (data.includes("El usuario ya está registrado")) {
+                    alert("El usuario ya está registrado");
+                } else {
+                    const loginUrl = data.split('Redirigiendo a la página de inicio de sesión: ')[1];
+                    window.location.href = loginUrl;
+                }
+            })
+            .catch(error => {
+                alert(error.message);
+                console.error('Error al registrar usuario:', error);
+            });
+    });
+    /*]]>*/
+</script>
+</body>
+</html>
